@@ -264,18 +264,18 @@ is valid.
  </section>
  </section>
 
- <section anchor="components" title="Proof of Patience">
+ <section anchor="proof-of-patience" title="Proof of Patience">
   <t>
 The Proof of Patience algorithm is a type of proof that demonstrates that a
 client waited for a certain period of time before attempting a request.
   </t>
-   <section anchor="params" title="Proof of Patience Parameters">
+   <section anchor="pop-params" title="Proof of Patience Parameters">
     <section anchor="pop-type" title="type">
      <t>
 REQUIRED.  The `type` field must be set to `patience`.
      </t>
     </section>
-    <section anchor="token" title="token">
+    <section anchor="pop-token" title="token">
      <t>
 REQUIRED.  The `token` field is typically a server-encrypted secret that,
 when retransmitted to the server after a defined wait period, proves that the
