@@ -18,10 +18,10 @@
 <?rfc toc="yes" ?>
 <?rfc sortrefs="yes" ?>
 <?rfc symrefs="yes" ?>
-<rfc category="std" ipr="trust200902" submissionType="independent" 
-     docName="draft-sporny-http-proofs-00">
+<rfc category="std" ipr="trust200902" submissionType="independent"
+     docName="draft-sporny-http-proofs-01">
 <front>
- <title>Cryptographic Proofs for HTTP Messages</title>
+ <title>Proof-based Authentication for HTTP Messages</title>
 
  <author initials="M.S." surname="Sporny" fullname="Manu Sporny">
   <organization>Digital Bazaar</organization>
@@ -39,30 +39,48 @@
   </address>
  </author>
 
- <date month="August" year="2014" />
+ <author initials="D.L." surname="Longley" fullname="Dave">
+  <organization>Digital Bazaar</organization>
+  <address>
+   <postal>
+    <street>1700 Kraft Drive</street>
+    <street>Suite 2408</street>
+    <city>Blacksburg</city> <region>VA</region>
+    <code>24060</code>
+    <country>US</country>
+   </postal>
+   <phone>+1 540 961 4469</phone>
+   <email>dlongley@digitalbazaar.com</email>
+   <uri>https://github.com/dlongley</uri>
+  </address>
+ </author>
+
+ <date month="June" year="2015" />
  <area>Security</area>
  <workgroup></workgroup>
  <keyword>HTTP</keyword>
+ <keyword>authentication</keyword>
  <keyword>mathematical proof</keyword>
  <keyword>proof of work</keyword>
- <keyword>authentication</keyword>
+ <keyword>proof of patience</keyword>
+ <keyword>proof of navigation</keyword>
  <abstract>
   <t>
 For a client to access a particular resource on the Web, a server must
 expend a certain amount of computational effort to respond to the request. In
 some cases this computational effort is sizeable and the server may want to
-only respond to certain clients. For example, in a distributed 
+only respond to certain clients. For example, in a distributed
 denial-of-service attack, a server may require all clients to expend a
-certain amount of resources via a client-run proof-of-work algorithm to 
+certain amount of resources via a client-run proof-of-work algorithm to
 throttle the number of incoming requests to a more manageable number. This
-document details a few HTTP Headers that may be used to request and
-transmit cryptographic mathematical proofs in HTTP headers.
+document details a new authentication scheme for HTTP that may be used to
+request and transmit proofs in HTTP headers.
   </t>
  </abstract>
  <note title="Feedback">
   <t>
-This specification is a thought exercise that may be submitted on a 
-standardization track in the future. Feedback related to this specification 
+This specification is a thought exercise that may be submitted on a
+standardization track in the future. Feedback related to this specification
 should be sent to
 <eref target="mailto:msporny@digitalbazaar.com">msporny@digitalbazaar.com</eref>.
   </t>
@@ -73,40 +91,48 @@ should be sent to
 
  <section anchor="intro" title="Introduction">
   <t>
-This protocol extension is intended to provide a simple and standard way for 
-clients and servers to request and transmit mathematical proofs to one another.
+This protocol extension is intended to provide a simple and standard way for
+clients and servers to request and transmit proofs to one another.
   </t>
-  
+
   <t>
 For a client to access a particular resource on the Web, a server must
 expend a certain amount of computational effort to respond to the request. In
 some cases this computational effort is sizeable and the server may want to
-only respond to certain clients. For example, in a distributed 
+only respond to certain clients. For example, in a distributed
 denial-of-service attack, a server may require all clients to expend a
-certain amount of resources via a client-run proof-of-work algorithm to 
+certain amount of resources via a client-run proof-of-work algorithm to
 throttle the number of incoming requests to a more manageable number.
   </t>
 
   <t>
-Editor's note: Explain why proofs of work are interesting for HTTP. 
-Specifically, when you have a public resource where you don't want to 
-authenticate users, but you do want to be able to throttle requests. 
-For example, proxies, URL redirection services, and CDNs could benefit from
-these sorts of services to mitigate distributed denial-of-service attacks.
-Systems where all clients slam a particular endpoint, like high-frequency 
-trading systems, could use such a mechanism to purposefully slow incoming 
-requests. Block-chain-like systems could use this mechanism as a native
-way to access shared databases (like a decentralized ledger). 
-There may be more uses, but those are the ones that inspired this specification.
-  </t> 
- 
+Fundamentally, proofs need to separate clients that are using the system in
+good faith versus clients that are attempting to attack the system. In order
+to do this, a proof must be selected that creates a net economic loss to
+an attacker of the system while also not making legitimate uses of the system
+too costly. Proofs must be tuned to the type of protection the server would
+like to apply to a target resource.
+  </t>
+
+  <t>
+There are many classes of proofs that can be used by a server to identify
+legitimate clients. Some of these include proof of work, proof of navigation,
+proof of humanity, and proof of patience. A proof of work typically
+requires a time consuming mathematical puzzle to be solved, such as
+prime factorization. A proof of navigation requires tokens to be fetched from
+a list of servers on a network in a particular order. A proof of humanity
+requires a problem to be solved, like identifying an emotion in an image,
+that cannot easily be determined by a computer. A proof of patience requires
+a client to prove that it has waited for a certain period of time before being
+allowed to have access to a particular resource on a server.
+  </t>
  </section>
- 
+
  <section anchor="components" title="The Components of a Proof">
   <t>
 There are a number of components in a proof that are common between the
-'Proof' HTTP Authentication Scheme and the 'Proof' HTTP Header. This
-section details the components of a HTTP Proof.
+'Proof' HTTP Authentication Scheme. This section details the components of a
+HTTP Proof.
   </t>
 
    <section anchor="params" title="Proof Parameters">
@@ -115,37 +141,12 @@ section details the components of a HTTP Proof.
 The following section details the proof parameters.
     </t>
 
-    <section anchor="algorithm" title="algorithm">
+    <section anchor="type" title="type">
      <t>
-REQUIRED.  The `algorithm` field specifies the specific mathematical proof
-algorithm that is employed by the rest of the parameters. The value of this
+REQUIRED.  The `type` field specifies the specific proof algorithm that is
+employed by the rest of the parameters. The value of this
 field SHOULD be a registered algorithm as defined in the Proof Algorithm
 Registry.
-     </t>
-    </section>
-    
-    <section anchor="difficulty" title="difficulty">
-
-     <t>
-REQUIRED.  The `difficulty` field denotes the level of difficulty that is
-associated with the `algorithm` field. The value of the field is highly
-dependent on the algorithm listed in the Proof Algorithm Registry.
-     </t>
-
-    </section>
-    
-    <section anchor="problem" title="problem">
-     <t>
-OPTIONAL.  The `problem` value is used by the server to specify the
-problem to solve. It is typically used to initialize the proof algorithm.
-     </t>
-    </section>
-
-    <section anchor="solution" title="solution">
-     <t>
-OPTIONAL.  The `answer` value is used by the client to specify the answer
-to the problem posed to it by the server. This field is typically used when
-sending a calculated answer to the server.
      </t>
     </section>
 
@@ -153,147 +154,213 @@ sending a calculated answer to the server.
 
    <section anchor="ambiguity" title="Ambiguous Parameters">
     <t>
-If any of the parameters listed above are erroneously duplicated in the 
+If any of the parameters listed above are erroneously duplicated in the
 associated header field, then the last parameter defined MUST be used. Any
-parameter that is not recognized as a parameter, or is not well-formed, 
+parameter that is not recognized as a parameter, or is not well-formed,
 MUST be ignored.
     </t>
    </section>
-   
+
  </section>
-  
+
  <section anchor="auth-scheme" title="The 'Proof' HTTP Authentication Scheme">
 
   <t>
-The "proof" authentication scheme is based on the model that the client must
-authenticate itself with a mathematical proof that answers the question
-posed by the server. The scheme is parameterized enough such that it is not 
-bound to any particular proofing algorithm.
+The "Proof" authentication scheme is based on the model that the client must
+establish a solution (aka proof) to a challenge posed by the server. The
+scheme is parameterized enough such that it is not bound to any particular
+proofing algorithm.
   </t>
-  
-  <section anchor="auth-header" title="Authorization Header">
+
+  <section anchor="auth-header" title="The Authorization Header">
 
    <t>
-The client is expected to send an Authorization header 
-(as defined in 
-<xref target="RFC7235">RFC 7235</xref>, <eref 
+The client is expected to send an Authorization header
+(as defined in
+<xref target="RFC7235">RFC 7235</xref>, <eref
 target="http://tools.ietf.org/html/draft-ietf-rfc7235-auth-25#section-4.1">
-Section 4.1</eref>) where the "auth-scheme" is "Proof" and the 
-"auth-param" parameters meet the requirements listed in 
-Section 2: The Components of a Proof.
+Section 4.1</eref>) where the "auth-scheme" is "Proof" and the
+"auth-param" parameters meet the requirements listed in
+Section 2: The Components of a Proof and the specific parameters for the
+proof algorithm being used.
    </t>
 
    <t>
-The rest if this section uses the following HTTP request as an example.
 
     <figure>
      <artwork>
-POST /foo HTTP/1.1
-Host: example.org
-Date: Tue, 07 Aug 2014 20:51:35 GMT
-Content-Type: application/json
-Content-Length: 18
-
-{"hello": "world"}
+Authorization: Proof type=example, foo=bar
      </artwork>
     </figure>
    </t>
-   
+
+   <t>
+Note: The example above uses 'example', 'foo', and 'bar' for purely
+illustrative purposes. A real example is provided in the section below titled
+`Proof of Patience`.
+   </t>
+
    <section anchor="auth-ipa" title="Initiating Proof Authorization">
 
     <t>
 A server may notify a client when a protected resource could be accessed by
-authenticating itself to the server. To initiate this process, the server
-will request that the client authenticate itself via a 401 response code. The
-server may optionally specify which type of proof, difficulty, and problem
-it would like to have solved in the WWW-Authenticate header.
+authenticating itself to the server via a proof. To initiate this process, the
+server will request that the client authenticate itself via a 401 response code.
+The server should specify which type of proof it would like to have established
+in the WWW-Authenticate header.
+    </t>
 
-For example:
+    <t>
+The example below is provided to illustrate a generic proof flow, but the
+proof parameters are only for illustrative purposes. A more specific example
+is included in the section titled "Proof of Patience". Given the
+following request:
+    </t>
+
+    <figure>
+     <artwork>
+GET /examples/protected HTTP/1.1
+Host: example.com
+     </artwork>
+    </figure>
+
+    <t>
+The following request for a proof is supplied by the server via
+the WWW-Authenticate header:
+    </t>
+
     <figure>
      <artwork>
 HTTP/1.1 401 Unauthorized
-Date: Thu, 08 Jun 2014 18:32:30 GMT
+Date: Thu, 05 Jul 2015 21:31:41 GMT
 Content-Length: 1234
 Content-Type: text/html
-WWW-Authenticate: Proof realm="Example",
-  algorithm="scrypt",difficulty="1068",problem="0f43ba8b21"
+WWW-Authenticate: Proof type=example, foo=bar
 
 ...
-</artwork>
+     </artwork>
     </figure>
+
+    <t>
+The client performs what is necessary given the proof and then transmits the
+established proof back to the server via the `Authorization` header.
     </t>
-   </section>
-   
-   <section anchor="auth-proof-example" title="Proof Example">
-   
-   <t>
-The authorization header and proof would be generated as:
+
     <figure>
      <artwork>
-Authorization: Proof realm="Example",algorithm="scrypt",difficulty="1068",
-  problem="0f43ba8b21",solution="00000000b28fcd2"</artwork>
+GET /examples/protected HTTP/1.1
+Host: example.com
+Date: Thu, 05 Jul 2015 21:46:52 GMT
+Authorization: Proof type=example, foo=bar
+     </artwork>
     </figure>
-   </t>
 
-    </section>
-   </section>
+    <t>
+The server would then verify the proof and fulfill the request if the proof
+is valid.
+    </t>
+
   </section>
+ </section>
+ </section>
 
- <section anchor="sig" title="The 'Proof' HTTP Header">
-
+ <section anchor="components" title="Proof of Patience">
   <t>
-The "proof" HTTP Header is based on the model that the client must
-authenticate itself with a mathematical proof that answers a question
-that is commonly known to the client and the server. The scheme is 
-parameterized enough such that it is not bound to any particular 
-proofing algorithm.
+The Proof of Patience algorithm is a type of proof that demonstrates that a
+client waited for a certain period of time before attempting a request.
   </t>
-  
-  <section anchor="sig-header" title="Proof Header">
-
-   <t>
-The sender is expected to transmit a header 
-(as defined in 
-<xref target="RFC7230">RFC 7230</xref>, <eref 
-target="http://tools.ietf.org/html/rfc7230#section-3.2">
-Section 3.2</eref>) where the "field-name" is "Proof", and the "field-value"
-contains one or more "auth-param"s (as defined in 
-<xref target="RFC7235">RFC 7235</xref>, <eref 
-target="http://tools.ietf.org/html/rfc7235#section-4.1">
-Section 4.1</eref>) where the "auth-param" parameters meet the requirements 
-listed in Section 2: The Components of a Proof.
-   </t>
-
-   <t>
-The rest if this section uses the following HTTP request as an example.
-
-    <figure>
-     <artwork>
-POST /foo HTTP/1.1
-Host: example.org
-Date: Tue, 07 Aug 2014 20:51:35 GMT
-Content-Type: application/json
-Content-Length: 18
-
-{"hello": "world"}</artwork>
-    </figure>
-   </t>
-      
-   <section anchor="proof-header-example" title="Proof Header Example">
-   
-   <t>
-The proof header would be generated as:
-    <figure>
-     <artwork>
-Proof: algorithm="scrypt",difficulty="1068",
-  problem="0f43ba8b21",solution="00000000b28fcd2"</artwork>
-    </figure>
-   </t>
-   
-
+   <section anchor="params" title="Proof of Patience Parameters">
+    <section anchor="pop-type" title="type">
+     <t>
+REQUIRED.  The `type` field must be set to `patience`.
+     </t>
+    </section>
+    <section anchor="token" title="token">
+     <t>
+REQUIRED.  The `token` field is typically a server-encrypted secret that,
+when retransmitted to the server after a defined wait period, proves that the
+client has waited a certain amount of time that was requested by the server.
+It is important that the server specify the amount of time to wait via
+the `Retry-After` HTTP Header. The client should wait until the number of
+seconds specified in `Retry-After` has elapsed. The client should then attempt
+the initial request again with the contents supplied in the `WWW-Authenticate`
+copied into a new `Authorization` header.
+     </t>
+     <t>
+The contents of the token is specific to the server. For example, the token
+could contain the requesting IP of the client, the specific HTTP resource the
+token is tied to, and the time period when the token is valid. The server
+could then encrypt the data, base64 encode it, and set `token` to the
+encrypted, base64-encoded value. This ensures that the client cannot tamper
+with the data and can simply re-transmit the token back to the server after
+a certain period of time has elapsed to establish the proof of patience.
+     </t>
     </section>
    </section>
+
+   <section anchor="pop-example" title="Proof of Patience Example">
+
+    <t>
+For example, given the following HTTP request:
+    </t>
+
+    <figure>
+     <artwork>
+POST /examples HTTP/1.1
+Host: example.com
+Date: Thu, 05 Jul 2015 21:31:40 GMT
+Content-Type: application/json
+Content-Length: 3
+
+{}
+     </artwork>
+    </figure>
+
+    <t>
+The following request for a proof of patience is supplied by the server via
+the WWW-Authenticate header:
+    </t>
+
+    <figure>
+     <artwork>
+HTTP/1.1 401 Unauthorized
+Date: Thu, 05 Jul 2015 21:31:41 GMT
+Content-Length: 1234
+Content-Type: text/html
+WWW-Authenticate: Proof type=patience, token="jA0EAwMpYIIz/X7aE+u3ADHjb4="
+Retry-After: 30
+
+...
+     </artwork>
+    </figure>
+
+    <t>
+The client then waits for 30 seconds, as specified in the `Retry-After` header,
+and then transmits the proof of patience back to the server via the
+`Authorization` header.
+    </t>
+
+    <figure>
+     <artwork>
+POST /examples HTTP/1.1
+Host: example.com
+Date: Thu, 05 Jul 2015 21:32:11 GMT
+Content-Type: application/json
+Content-Length: 3
+Authorization: Proof type=patience, token="jA0EAwMpYIIz/X7aE+u3ADHjb4="
+
+{}
+     </artwork>
+    </figure>
+
+    <t>
+The server would then decrypt the token and verify that the contents of the
+token meet the proof of patience requirement. If the verification is successful,
+the server would fulfill the request.
+    </t>
+
   </section>
+ </section>
 
 </middle>
 <back>
@@ -317,26 +384,27 @@ Proof: algorithm="scrypt",difficulty="1068",
   <t>
 Editor's note: Clearly there are a number of concerning reverse denial
 of service attacks that could be executed over non-HTTPS connections. A
-simple header injection could keep a client spinning for a very long time.
-Much more thinking needs to be put into this section.
+simple header injection could keep a client spinning for a very long time in
+the event of a proof of work (e.g. by corrupting the number of iterations to
+perform). More thinking needs to be put into this section.
   </t>
  </section>
 
  <section anchor="appendix-b" title="Extensions">
   <t>
 This specification was designed to be simple, modular, and extensible.
-Developers that desire more functionality than this specification provides 
-are urged to ensure that an extension specification doesn't already exist 
+Developers that desire more functionality than this specification provides
+are urged to ensure that an extension specification doesn't already exist
 before implementing a proprietary extension.
   </t>
 
   <t>
 If extensions to this specification are made by adding new Proof
 Parameters, those extension parameters MUST be registered in the
-Proof Parameter Registry. The registry will be created and 
-maintained at (the suggested URI) 
+Proof Parameter Registry. The registry will be created and
+maintained at (the suggested URI)
 <eref target="http://www.iana.org/assignments/http-proof-parameters">
-http://www.iana.org/assignments/http-proof-parameters</eref>. An 
+http://www.iana.org/assignments/http-proof-parameters</eref>. An
 example entry in this registry is included below:
 
    <figure>
@@ -352,39 +420,22 @@ of iterations to run on the mathematical proof algorithm.
 
  <section anchor="appendix-c" title="Test Values">
   <t>
-Editor's note: This section should include some scrypt calculation stuff.
-
+   Provide a simple test of a Proof of Patience.
    <figure>
     <artwork>
-Editor's note: Some scrypt parameters. 
+
     </artwork>
    </figure>
 
-  </t>
-
-  <t>
-All examples use this request:
-   <figure>
-    <artwork>
-POST /foo?param=value&amp;pet=dog HTTP/1.1
-Host: example.com
-Date: Thu, 05 Jan 2014 21:31:40 GMT
-Content-Type: application/json
-Content-Length: 18
-
-{"hello": "world"}
-    </artwork>
-   </figure>
   </t>
 
   <section anchor="default-test" title="Default Test">
    <t>
-Editor's Note: A simple scrypt-based proof of work.
     <figure>
      <artwork></artwork>
    </figure>
    </t>
-   
+
  </section>
  </section>
  <section anchor="acknowledgements" title="Acknowledgements">
@@ -403,19 +454,19 @@ http://www.iana.org/assignments/http-authschemes</eref>
    <t>
 Authentication Scheme Name: Proof<vspace/>
 Reference: [RFC_THIS_DOCUMENT], Section 2.<vspace/>
-Notes (optional): The Proof scheme is designed for clients to 
-authenticate themselves with a server by performing a mathematical proof. 
+Notes (optional): The Proof scheme is designed for clients to
+authenticate themselves with a server by performing a mathematical proof.
    </t>
   </section>
   <section anchor="sa-registry" title="Proof Algorithm Registry">
    <t>
-The following initial entries should be added to the Proof Algorithm 
-Registry to be created and maintained at (the suggested URI) 
+The following initial entries should be added to the Proof Algorithm
+Registry to be created and maintained at (the suggested URI)
 <eref target="http://www.iana.org/assignments/proof-algorithms">
 http://www.iana.org/assignments/proof-algorithms</eref>:
    </t>
    <t>
-Algorithm Name: scrypt<vspace/>
+Algorithm Name: patience<vspace/>
 Reference: [SCRYPT_RFC_WHEN_IT_EXISTS]
 Status: active
    </t>
