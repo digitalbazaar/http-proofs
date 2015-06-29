@@ -467,7 +467,7 @@ http://www.iana.org/assignments/proof-algorithms</eref>:
    </t>
    <t>
 Algorithm Name: patience<vspace/>
-Reference: [SCRYPT_RFC_WHEN_IT_EXISTS]
+Reference: [RFC_THIS_DOCUMENT]<vspace/>
 Status: active
    </t>
   </section>
